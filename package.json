@@ -1,0 +1,25 @@
+{
+  "name": "tabshell",
+  "version": "1.0.0",
+  "description": "A real Linux terminal in a browser tab: Alpine in v86, or Ubuntu through Docker. Reset wipes everything.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "image": "./scripts/build-image.sh",
+    "start": "node server.mjs",
+    "test": "node --test test/"
+  },
+  "author": "Lucas Van De Weerd",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@xterm/addon-fit": "0.11.0",
+    "@xterm/addon-webgl": "0.19.0",
+    "@xterm/xterm": "6.0.0",
+    "v86": "0.5.463"
+  },
+  "devDependencies": {
+    "vite": "8.3.1"
+  },
+  "private": true
+}
