@@ -41,7 +41,7 @@ Both modes share one terminal: [xterm.js](https://github.com/xtermjs/xterm.js) d
 - serves TabShell on <http://localhost:8686>;
 - opens it in your browser.
 
-Close the Terminal window to stop it.
+Close the Terminal window to stop it. If macOS says it can't open `start.command` because it was downloaded from the internet, right-click it and choose **Open** once.
 
 Opening `index.html` directly doesn't work. Browsers won't run the app from a `file://` address.
 
@@ -97,8 +97,8 @@ browser: xterm.js + WebGL renderer
 - **Saving.**
   - What's saved: the whole machine (memory, devices and changed files), using `save_state()`.
   - Where: IndexedDB.
-  - When: every minute while something happened, and when the tab is hidden.
-  - On the next visit, the VM continues from that state.
+  - When: 5 seconds after the screen goes quiet, every minute during nonstop output such as a game, and when the tab is hidden. Changes from the last few seconds before closing the tab can be lost.
+  - On the next visit, the VM continues from that state. Its clock is re-synced over NTP within a minute.
 - **Reset.** Stops the VM, deletes the saved state and boots the original image.
 - **Network.** The VM's virtio network card talks to a relay over a WebSocket.
   - **Default:** Mercury Workshop's public Wisp server `wisps://wisp.mercurywork.shop/v86/`, the same one v86's own demo offers.
@@ -147,6 +147,7 @@ browser: xterm.js + WebGL renderer
 - **Relay.** The Browser VM's internet traffic goes through a third-party relay unless you run your own. See **Network** in the app.
 - **Docker mode is local.** It isn't available on the hosted page, only through `start.command` or `npm start`.
 - **Shells after a reload.** Reloading in Docker mode starts a new shell. Files and packages stay, but programs running in the old shell are stopped.
+- **Image updates.** When a new version of TabShell ships a changed Linux image, a VM saved on the old image can't be restored and you get a fresh one.
 - **Browser storage.** A saved Browser VM is about 150 MB with Python installed, and grows with what you add. Clearing the site's data in your browser has the same effect as Reset.
 
 ## Contributing

@@ -8,9 +8,10 @@ on:
 permissions:
   contents: read
 
+# Never cancel a run halfway through a deploy.
 concurrency:
   group: pages-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -28,7 +29,17 @@ jobs:
       - name: Test the local server
         run: npm test
 
+      # Saved VMs only restore on the image they were saved from, so reuse the built image
+      # until its sources change rather than rebuilding (and resetting everyone) on every push.
+      - name: Restore the Alpine VM image
+        id: image
+        uses: actions/cache@v6
+        with:
+          path: public/alpine
+          key: alpine-${{ hashFiles('image/**', 'scripts/build-image.sh', 'scripts/*.py') }}
+
       - name: Build the Alpine VM image
+        if: steps.image.outputs.cache-hit != 'true'
         run: ./scripts/build-image.sh
 
       - name: Build the Docker-mode image

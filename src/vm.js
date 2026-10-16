@@ -6,7 +6,8 @@ export const DEFAULT_RELAY = "wisps://wisp.mercurywork.shop/v86/";
 const BASE = import.meta.env.BASE_URL;
 const DB = "tabshell";
 const KEY = "vm-state";
-const SAVE_EVERY_MS = 60_000;
+const SAVE_WHEN_QUIET_MS = 5_000;
+const SAVE_EVERY_MS = 60_000; // for nonstop output, such as a game
 
 const idb = (mode, fn) => new Promise((resolve, reject) => {
   const open = indexedDB.open(DB, 1);
@@ -19,12 +20,13 @@ const idb = (mode, fn) => new Promise((resolve, reject) => {
     tx.onerror = tx.onabort = () => { open.result.close(); reject(tx.error); };
   };
 });
+// A state from an older image would point at files that no longer exist, so it's only used on the same image.
 const loadState = () => idb("readonly", s => s.get(KEY)).catch(() => undefined);
-const storeState = buf => idb("readwrite", s => s.put(buf, KEY));
+const storeState = buf => idb("readwrite", s => s.put({ image: __IMAGE_ID__, buf }, KEY));
 const clearState = () => idb("readwrite", s => s.delete(KEY));
 
 export function startVm(term, { relay, onStatus }) {
-  let emulator, dirty = false, saving = null, stopped = false, timer, input = new Uint8Array(0), flushing = false;
+  let emulator, dirty = false, saving = null, stopped = false, timer, quiet, input = new Uint8Array(0), flushing = false;
   const enc = new TextEncoder();
   const dec = new TextDecoder();
   // v86 0.5.463 writes this pair into the Linux resize message in reverse, so rows go first to arrive as cols×rows.
@@ -33,6 +35,7 @@ export function startVm(term, { relay, onStatus }) {
   // v86 drops console input when the guest has no receive buffer posted, which loses fast typing and pastes.
   // So input waits in a queue until the receive queue has room.
   // shortcut: reads v86 internals (v86.cpu.devices.virtio_console), recheck when upgrading v86.
+  const touch = () => { dirty = true; clearTimeout(quiet); quiet = setTimeout(save, SAVE_WHEN_QUIET_MS); };
   const rxReady = () => emulator?.v86?.cpu?.devices?.virtio_console?.virtio?.queues[0]?.has_request() ?? true;
   function flush() {
     flushing = false;
@@ -43,7 +46,7 @@ export function startVm(term, { relay, onStatus }) {
     if (input.length && !stopped) { flushing = true; setTimeout(flush, 5); }
   }
   function send(data) {
-    dirty = true;
+    touch();
     const bytes = enc.encode(data);
     const merged = new Uint8Array(input.length + bytes.length);
     merged.set(input);
@@ -62,9 +65,12 @@ export function startVm(term, { relay, onStatus }) {
   const onHidden = () => document.visibilityState === "hidden" && save();
 
   async function boot() {
-    const saved = await loadState();
+    const stored = await loadState();
+    const saved = stored?.image === __IMAGE_ID__ ? stored.buf : undefined;
     if (stopped) return;
-    onStatus(saved ? "Restoring your VM…" : "Booting Alpine Linux… (first boot takes about 30 seconds)");
+    onStatus(saved ? "Restoring your VM…" : stored
+      ? "TabShell's Linux image was updated, so this is a fresh VM. Booting… (about 30 seconds)"
+      : "Booting Alpine Linux… (first boot takes about 30 seconds)");
     emulator = new V86({
       wasm_path: wasmUrl,
       bios: { url: BASE + "bios/seabios.bin" },
@@ -84,7 +90,7 @@ export function startVm(term, { relay, onStatus }) {
 
     let ready = false;
     emulator.add_listener("virtio-console0-output-bytes", bytes => {
-      dirty = true;
+      touch();
       term.write(dec.decode(bytes, { stream: true }));
       if (!ready) { ready = true; onStatus("Alpine Linux · 32-bit · in your browser"); resize(); }
     });
@@ -108,6 +114,7 @@ export function startVm(term, { relay, onStatus }) {
     // Saves first so switching to Docker mode and back keeps the VM as it was.
     async stop() {
       clearInterval(timer);
+      clearTimeout(quiet);
       document.removeEventListener("visibilitychange", onHidden);
       await save();
       stopped = true;
@@ -116,6 +123,7 @@ export function startVm(term, { relay, onStatus }) {
     async reset() {
       stopped = true;
       clearInterval(timer);
+      clearTimeout(quiet);
       document.removeEventListener("visibilitychange", onHidden);
       await saving;
       await emulator?.destroy();

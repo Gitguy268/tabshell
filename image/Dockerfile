@@ -17,6 +17,11 @@ RUN printf 'auto lo\niface lo inet loopback\n\nauto eth0\niface eth0 inet dhcp\n
 RUN printf 'export LANG=C.UTF-8\nexport PS1="\\[\\e[32m\\]\\u@\\h\\[\\e[0m\\]:\\[\\e[34m\\]\\w\\[\\e[0m\\]# "\n' > /etc/profile.d/tabshell.sh \
  && printf '\nWelcome to TabShell (Alpine Linux in your browser).\n  apk add python3    install packages\n  snek               play Snake\n\n' > /etc/motd
 
+# A restored VM resumes with the clock from when it was saved. Syncing once a minute fixes that;
+# v86's network backends answer NTP, so this works with any relay.
+RUN printf '#!/bin/sh\n(while :; do ntpd -nq -p pool.ntp.org >/dev/null 2>&1; sleep 60; done) &\n' > /etc/local.d/clock.start \
+ && chmod +x /etc/local.d/clock.start
+
 # taniarascia/snek, preinstalled so it works without network.
 # The published package has no "bin" entry, so add the command ourselves.
 RUN npm install -g snekjs@1.0.4 && npm cache clean --force \
@@ -26,6 +31,7 @@ RUN npm install -g snekjs@1.0.4 && npm cache clean --force \
 RUN for i in devfs dmesg mdev hwdrivers; do rc-update add $i sysinit; done \
  && for i in hwclock modules sysctl hostname syslog bootmisc; do rc-update add $i boot; done \
  && rc-update add networking default \
+ && rc-update add local default \
  && rc-update add killprocs shutdown
 
 # Generate initramfs with 9p modules
