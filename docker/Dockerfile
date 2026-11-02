@@ -1,5 +1,5 @@
 # Full 64-bit Ubuntu for TabShell's Docker mode. ttyd serves the shell over a WebSocket.
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 
 ENV DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8 LC_ALL=C.UTF-8 TERM=xterm-256color
 
