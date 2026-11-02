@@ -16,7 +16,7 @@ A real Linux terminal in a browser tab. Install packages, play terminal games, t
 </div>
 
 <!-- live-links -->
-**Live:** [gitguy268.github.io/tabshell](https://gitguy268.github.io/tabshell/)
+**Live:** [gitguy268.github.io/tabshell](https://gitguy268.github.io/tabshell/) · [tabshell.vercel.app](https://tabshell.vercel.app)
 <!-- /live-links -->
 
 <!-- run-steps:start -->
