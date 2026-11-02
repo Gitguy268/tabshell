@@ -15,6 +15,10 @@ A real Linux terminal in a browser tab. Install packages, play terminal games, t
 
 </div>
 
+<!-- live-links -->
+**Live:** [gitguy268.github.io/tabshell](https://gitguy268.github.io/tabshell/)
+<!-- /live-links -->
+
 <!-- run-steps:start -->
 ## Run it locally, step by step
 
