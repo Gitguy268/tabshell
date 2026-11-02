@@ -7,7 +7,7 @@
     "build": "vite build",
     "image": "./scripts/build-image.sh",
     "start": "node server.mjs",
-    "test": "node --test test/"
+    "test": "node --test test/*.test.mjs"
   },
   "author": "Lucas Van De Weerd",
   "license": "MIT",
