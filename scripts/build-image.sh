@@ -7,7 +7,7 @@ OUT=public/alpine
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"; docker rm -f tabshell-alpine-export >/dev/null 2>&1 || true' EXIT
 
-docker build image --platform linux/386 --tag tabshell-alpine
+docker build --platform linux/386 --tag tabshell-alpine -f image/Dockerfile .
 docker rm -f tabshell-alpine-export >/dev/null 2>&1 || true
 docker create --platform linux/386 --name tabshell-alpine-export tabshell-alpine >/dev/null
 docker export tabshell-alpine-export -o "$TMP/rootfs.tar"

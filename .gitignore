@@ -4,3 +4,7 @@ public/alpine/
 .DS_Store
 .env
 .env.*
+tools/*/*
+!tools/*/.gitkeep
+.vercel/
+!.env.example

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { request } from "node:http";
 
 process.env.PORT = "18686";
-const { server } = await import("../server.mjs");
+const { server, parseContainerInspect } = await import("../server.mjs");
 before(() => new Promise(r => server.listen(18686, "127.0.0.1", r)));
 after(() => server.close());
 
@@ -42,4 +42,11 @@ test("refuses WebSocket upgrades from other origins", async () => {
     req.on("response", resolve).on("upgrade", () => reject(new Error("upgraded"))).on("error", reject).end();
   });
   assert.equal(res.statusCode, 403);
+});
+
+test("reads token and address from container inspect", () => {
+  const out = JSON.stringify([{ configuration: { initProcess: { environment: ["PATH=/bin", "TOKEN=abc"] } },
+    status: { state: "running", networks: [{ ipv4Address: "192.168.64.5/24" }] } }]);
+  assert.deepEqual(parseContainerInspect(out), { running: true, token: "abc", host: "192.168.64.5", port: 7681 });
+  assert.equal(parseContainerInspect("[]"), null);
 });

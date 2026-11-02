@@ -16,20 +16,20 @@ export function startDocker(term, { onStatus }) {
   async function connect() {
     ended = false;
     onStatus("Starting the Ubuntu container…");
-    let token;
+    let token, runtime;
     try {
       const res = await fetch("/api/token", { cache: "no-store" });
-      ({ token } = await res.json());
+      ({ token, runtime } = await res.json());
       if (!res.ok || !token) throw new Error("server said no");
     } catch {
-      return end("Couldn't start the container. Is Docker Desktop running?");
+      return end("Couldn't start the container. Is Docker Desktop or container running?");
     }
     if (stopped) return;
     ws = new WebSocket(`ws://${location.host}/ws`, ["tty"]);
     ws.binaryType = "arraybuffer";
     ws.onopen = () => {
       ws.send(enc.encode(JSON.stringify({ AuthToken: token, columns: term.cols, rows: term.rows })));
-      onStatus("Ubuntu 24.04 · 64-bit · Docker");
+      onStatus(`Ubuntu 24.04 · 64-bit · ${runtime === "container" ? "container" : "Docker"}`);
     };
     ws.onmessage = e => {
       const data = new Uint8Array(e.data);

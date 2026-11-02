@@ -5,6 +5,39 @@ The MIT grant covers TabShell's own code only. TabShell bundles, adapts or
 downloads the third-party software below, each under its own licence. TabShell
 is not affiliated with or endorsed by any of these projects.
 
+Themes (src/themes.js)
+Both themes are unofficial fan tributes. They are not affiliated with or
+endorsed by Nujabes's estate, Hydeout Productions, Ye (Kanye West), Takashi
+Murakami, or any rights holder. No album art, logos or lyrics are included.
+
+- Nujabes (src/themes.js): the palette and the line "Your beat still laments
+  the world." are adapted from HalmyLyseas/omarchy-nujabes-theme,
+  Copyright (c) 2026 Halmyrach. MIT License, below. ANSI blue and the dim colour
+  were lightened for contrast. The wallpaper and kana art in that repo carry no
+  licence and are not used.
+- Ye: Graduation (src/themes.js): the palette is original. The lines are a
+  curated part of the list in ajzbc/kanye.rest, Copyright (c) 2024 Andrew Jazbec.
+  MIT License, below. That licence covers the compilation. The words are
+  attributed to Ye and remain his.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
 Bundled in the web app
 - v86 (libv86.mjs, v86.wasm), Copyright (c) 2012, The v86 contributors.
   BSD 2-Clause License. https://github.com/copy/v86
@@ -25,6 +58,13 @@ Built into the Browser VM image (public/alpine/, built by scripts/build-image.sh
 - snek (npm package snekjs 1.0.4), Copyright (c) Tania Rascia. MIT License.
   https://github.com/taniarascia/snek
 - blessed, Copyright (c) Christopher Jeffrey. MIT License. https://github.com/chjj/blessed
+
+Built into both images from sibling checkouts, when present (scripts/build-tools.sh, not in this repository)
+- superfile (spf), Copyright (c) yorukot and contributors. MIT License. https://github.com/yorukot/superfile
+- opencode (Docker mode only), Copyright (c) opencode contributors. MIT License. https://github.com/anomalyco/opencode
+- container's Linux front-end (scripts/linux/container.sh), Copyright Apple Inc. and the
+  container project authors. Apache License 2.0. https://github.com/apple/container
+- podman and its dependencies, from the distribution's packages. Apache License 2.0. https://github.com/containers/podman
 
 Installed in the Docker-mode container (docker/Dockerfile, not redistributed)
 - Ubuntu 24.04 packages, including ttyd (MIT License, https://github.com/tsl0922/ttyd).

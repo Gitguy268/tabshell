@@ -43,7 +43,7 @@ jobs:
         run: ./scripts/build-image.sh
 
       - name: Build the Docker-mode image
-        run: docker build -t tabshell-ubuntu docker
+        run: docker build -t tabshell-ubuntu -f docker/Dockerfile .
 
       - run: npm run build
 

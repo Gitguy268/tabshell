@@ -17,8 +17,9 @@ Report security problems privately: see [SECURITY.md](SECURITY.md).
 
    ```sh
    npm ci
+   ./scripts/build-tools.sh   # optional: spf, opencode, container from ../superfile, ../opencode, ../container
    npm run image      # builds the Alpine VM image into public/alpine/ (one time)
-   docker build -t tabshell-ubuntu docker
+   docker build -t tabshell-ubuntu -f docker/Dockerfile .
    npm run build
    npm start          # http://localhost:8686
    ```

@@ -45,7 +45,7 @@ button {
   cursor: pointer;
 }
 button:hover { border-color: var(--muted); }
-button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 button:disabled { opacity: .45; cursor: not-allowed; }
 button.danger { color: var(--danger); }
 button.danger:hover { border-color: var(--danger); }
@@ -55,7 +55,30 @@ button.danger:hover { border-color: var(--danger); }
 .modes button[aria-checked="true"] { background: var(--line); }
 
 #status { color: var(--muted); font-size: 13px; flex: 1; min-width: 8em; }
+#quote {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 13px;
+  font-style: italic;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#quote[hidden] { display: none; }
 .actions { display: flex; gap: 6px; }
+
+#theme {
+  font: inherit;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 4px 6px;
+  cursor: pointer;
+}
+#theme:hover { border-color: var(--muted); }
 
 #settings {
   display: grid;
@@ -106,6 +129,10 @@ dialog::backdrop { background: rgb(0 0 0 / .6); }
 dialog h2 { margin: 0 0 8px; font-size: 17px; }
 dialog p { margin: 0 0 18px; color: var(--muted); }
 .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+@media (max-width: 1000px) {
+  #quote { display: none; }
+}
 
 @media (max-width: 600px) {
   header { padding: 8px; }

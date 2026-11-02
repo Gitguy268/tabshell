@@ -3,6 +3,7 @@ import { FitAddon } from "@xterm/addon-fit";
 import { WebglAddon } from "@xterm/addon-webgl";
 import { startVm, DEFAULT_RELAY } from "./vm.js";
 import { startDocker, dockerAvailable } from "./docker.js";
+import { themes } from "./themes.js";
 
 const $ = s => document.querySelector(s);
 const status = $("#status");
@@ -16,8 +17,26 @@ const term = new Terminal({
   scrollback: 5000,
   fontFamily: 'ui-monospace, "SF Mono", Menlo, Consolas, monospace',
   fontSize: 14,
-  theme: { background: "#0d1117", foreground: "#e6edf3", cursor: "#5fd68a", selectionBackground: "#264f78" },
 });
+
+function applyTheme(id) {
+  const name = Object.hasOwn(themes, id) ? id : "default";
+  const { xterm, css, quotes } = themes[name];
+  term.options.theme = xterm;
+  for (const [key, value] of Object.entries(css)) document.documentElement.style.setProperty("--" + key, value);
+  const quote = $("#quote");
+  quote.textContent = quote.title = quotes[Math.floor(Math.random() * quotes.length)] ?? "";
+  quote.hidden = !quotes.length;
+  $("#theme").value = name;
+}
+for (const [id, { label }] of Object.entries(themes)) $("#theme").add(new Option(label, id));
+applyTheme(store.get("theme"));
+$("#theme").addEventListener("change", e => {
+  store.set("theme", e.target.value === "default" ? null : e.target.value);
+  applyTheme(e.target.value);
+  term.focus();
+});
+
 const fit = new FitAddon();
 term.loadAddon(fit);
 term.open($("#term"));
@@ -56,7 +75,7 @@ async function switchTo(next) {
   if (next === "docker") {
     const s = await dockerAvailable();
     if (!s) return onStatus("Docker mode needs the local app: download TabShell and double-click start.command.");
-    if (!s.docker) return onStatus("Docker isn't running. Start Docker Desktop, then try again.");
+    if (!s.docker) return onStatus("Docker isn't running. Start Docker Desktop (or `container system start`), then try again.");
     if (!s.image) return onStatus("The Ubuntu image isn't built yet. Restart start.command to build it.");
   }
   const old = backend;

@@ -21,12 +21,14 @@ A real Linux terminal in a browser tab. Install packages, play terminal games, t
 |---|---|---|
 | Linux | Alpine 3.21, 32-bit (i686) | Ubuntu 24.04, 64-bit |
 | Runs in | your browser, with [v86](https://github.com/copy/v86) (an x86 emulator compiled to WebAssembly) | a Docker container on your computer |
-| Needs | any modern browser | Docker Desktop and `start.command` |
+| Needs | any modern browser | Docker Desktop or [container](https://github.com/apple/container), and `start.command` |
 | Install packages | `apk add python3` | `sudo apt install python3`, Homebrew |
-| Preinstalled | Node.js, npm, [snek](https://github.com/taniarascia/snek) | git, curl, build tools |
+| Preinstalled | Node.js, npm, [snek](https://github.com/taniarascia/snek), podman, `spf`\*, `container`\* | git, curl, build tools, podman, `spf`\*, `opencode`\*, `container`\* |
 | Kept until Reset | yes, saved in your browser (IndexedDB) | yes, the container stays until Reset |
 
-Both modes share one terminal: [xterm.js](https://github.com/xtermjs/xterm.js) drawing on the GPU through its WebGL renderer, with resize, colours, mouse and full-screen programs.
+\* Built from the [superfile](https://github.com/yorukot/superfile), [opencode](https://github.com/anomalyco/opencode) and [container](https://github.com/apple/container) forks when they're checked out next to TabShell (`../superfile`, `../opencode`, `../container`); `scripts/build-tools.sh` skips any that are missing. `container` on Linux is the fork's podman front-end (`docs/linux.md` in the container fork): `container run --rm alpine echo hi`, `container ls -a`, `container here alpine sh`.
+
+Both modes share one terminal: [xterm.js](https://github.com/xtermjs/xterm.js) drawing on the GPU through its WebGL renderer, with resize, colours, mouse and full-screen programs. The header's theme menu switches the terminal and page between Default, Nujabes and Ye: Graduation, and remembers your choice. The two named themes also show a line of text in the header. They are unofficial tributes; see [NOTICE](NOTICE).
 
 - **Reset** throws the machine away and starts a fresh one: files, packages, history and the screen.
 - **Clear** only clears the screen.
@@ -49,8 +51,9 @@ Opening `index.html` directly doesn't work. Browsers won't run the app from a `f
 
 ```sh
 npm ci
+./scripts/build-tools.sh                # optional: spf, opencode, container from ../ checkouts
 npm run image                           # Alpine VM image → public/alpine/
-docker build -t tabshell-ubuntu docker  # Ubuntu image for Docker mode
+docker build -t tabshell-ubuntu -f docker/Dockerfile .  # Ubuntu image for Docker mode
 npm run build
 npm start                               # http://localhost:8686
 ```
@@ -85,7 +88,7 @@ Switching modes keeps both machines. Each one is only wiped by its own Reset.
 browser: xterm.js + WebGL renderer
  ├─ Browser VM: v86 (WebAssembly) ─ Alpine on a 9p filesystem ─ virtio console
  │                  └─ network: Wisp relay over a WebSocket
- └─ Docker:     server.mjs (127.0.0.1:8686) ─ WebSocket proxy ─ ttyd ─ bash in Ubuntu
+ └─ Docker:     server.mjs (127.0.0.1:8686) ─ WebSocket proxy ─ ttyd ─ bash in Ubuntu (Docker or apple/container)
 ```
 
 <details>
@@ -117,6 +120,7 @@ browser: xterm.js + WebGL renderer
   - removes and recreates it on Reset;
   - attaches no volumes or bind mounts, so removing the container removes everything.
 - The page talks ttyd's WebSocket protocol through `server.mjs`.
+- **Without Docker.** When Docker doesn't answer but `container system status` does, the same image runs on [apple/container](https://github.com/apple/container) instead: `start.command` builds it with `container build`, and the proxy reaches ttyd on the container VM's own address rather than a forwarded port.
 
 **Security.** A local shell is a tempting target for other websites, so:
 
@@ -124,8 +128,8 @@ browser: xterm.js + WebGL renderer
 - it refuses any `Host` header other than `localhost:8686` or `127.0.0.1:8686`, which stops DNS rebinding;
 - it refuses a `POST` or WebSocket from any other page's origin;
 - it sends no CORS headers;
-- ttyd is published on `127.0.0.1:8687` and needs a random per-container password, which the proxy adds;
-- the container runs without `--privileged`, without the Docker socket and without access to your files.
+- ttyd is published on `127.0.0.1:8687` (on apple/container: the VM's private vmnet address, reachable only from this Mac and its VMs) and needs a random per-container password, which the proxy adds;
+- the container runs without the Docker socket and without access to your files. It is `--privileged` (all capabilities on apple/container) so podman can run containers inside it, which gives its shell root over Docker's Linux VM.
 
 </details>
 
@@ -144,6 +148,7 @@ browser: xterm.js + WebGL renderer
 
 - **No Homebrew in Browser VM.** v86 emulates a 32-bit PC, and Homebrew only supports 64-bit Linux. Use Docker mode for Homebrew.
 - **Browser VM speed.** It's an emulator: plain shell work is fine, while compiling or installing large packages is slow.
+- **Containers in the Browser VM.** Images live in the VM's 512 MB of memory and share its network, so small images like `alpine` work and big ones don't fit.
 - **Relay.** The Browser VM's internet traffic goes through a third-party relay unless you run your own. See **Network** in the app.
 - **Docker mode is local.** It isn't available on the hosted page, only through `start.command` or `npm start`.
 - **Shells after a reload.** Reloading in Docker mode starts a new shell. Files and packages stay, but programs running in the old shell are stopped.

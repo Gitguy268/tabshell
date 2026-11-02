@@ -1,0 +1,9 @@
+# Image builds use the repo root as context only for tools/.
+.git
+node_modules
+dist
+public
+docs
+src
+test
+**/.gitkeep
