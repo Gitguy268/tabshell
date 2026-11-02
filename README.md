@@ -15,6 +15,38 @@ A real Linux terminal in a browser tab. Install packages, play terminal games, t
 
 </div>
 
+<!-- run-steps:start -->
+## Run it locally, step by step
+
+1. **Install [Node.js](https://nodejs.org) 20** or newer and [Docker](https://www.docker.com/products/docker-desktop/).
+
+2. **Get the code:**
+
+   ```sh
+   git clone https://github.com/Gitguy268/tabshell.git
+   cd tabshell
+   ```
+
+3. **Install and build:**
+
+   ```sh
+   npm ci
+   npm run image
+   docker build -t tabshell-ubuntu -f docker/Dockerfile .
+   npm run build
+   ```
+
+   On a Mac you can double-click `start.command` instead. It does all of this for you.
+
+4. **Start it:**
+
+   ```sh
+   npm start
+   ```
+
+5. **Open <http://localhost:8686/>** in your browser. Press `Ctrl+C` in the terminal to stop.
+<!-- run-steps:end -->
+
 ## Features
 
 | | Browser VM | Docker |
