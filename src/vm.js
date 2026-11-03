@@ -41,8 +41,7 @@ export function startVm(term, { relay, onStatus }) {
         navigator.locks.request("tabshell-vm", lock => {
           if (stopped) return;
           hold(lock);
-          touch(); // saves this tab's VM soon, now that it's the one kept
-          if (emulator) onStatus(RUNNING);
+          takeOver();
           return locked;
         }).catch(() => {});
       });
@@ -128,7 +127,27 @@ export function startVm(term, { relay, onStatus }) {
     document.addEventListener("visibilitychange", onHidden);
   }
 
-  boot().catch(err => onStatus("Couldn't start the VM: " + err.message));
+  const startBoot = () => boot().catch(err => onStatus("Couldn't start the VM: " + err.message));
+  let booted = startBoot();
+
+  // The tab that owned the VM has closed and saved it. This tab's copy is older and was never saved,
+  // so it restarts from that save rather than writing the older copy over it.
+  async function takeOver() {
+    await booted;
+    if (stopped) return;
+    clearInterval(timer);
+    clearTimeout(quiet);
+    document.removeEventListener("visibilitychange", onHidden);
+    const old = emulator;
+    emulator = undefined;
+    await old?.destroy();
+    if (stopped) return;
+    input = new Uint8Array(0);
+    dirty = false;
+    term.reset();
+    onStatus("The other TabShell tab closed, so this tab continues from its saved VM.");
+    booted = startBoot();
+  }
 
   return {
     send,
