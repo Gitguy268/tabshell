@@ -32,7 +32,7 @@ export function startVm(term, { relay, onStatus }) {
   const locked = new Promise(r => { release = r; });
   const enc = new TextEncoder();
   const dec = new TextDecoder();
-  // v86 0.5.463 writes this pair into the Linux resize message in reverse, so rows go first to arrive as cols×rows.
+  // v86 (0.5.463 to 0.5.472) writes this pair into the Linux resize message in reverse, so rows go first to arrive as cols×rows.
   const resize = () => emulator?.bus.send("virtio-console0-resize", [term.rows, term.cols]);
 
   // v86 drops console input when the guest has no receive buffer posted, which loses fast typing and pastes.

@@ -46,6 +46,9 @@ for (const [id, t] of Object.entries(themes)) {
       const ratio = contrast(xterm[name], xterm.background);
       assert.ok(ratio >= 4.5, `${name} is only ${ratio.toFixed(1)}:1`);
     }
+    // Bright black (bright white on light themes) is comments and shell suggestions: faint, but still legible.
+    const faint = t.scheme === "dark" ? "brightBlack" : "brightWhite";
+    assert.ok(contrast(xterm[faint], xterm.background) >= 3, faint);
     assert.ok(contrast(xterm.foreground, xterm.background) >= 4.5);
     assert.ok(contrast(xterm.foreground, xterm.selectionBackground) >= 4.5);
     assert.ok(contrast(xterm.cursor, xterm.background) >= 3, "cursor");

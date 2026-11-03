@@ -49,7 +49,7 @@ export const themes = {
       selectionBackground: "#4a2a78", selectionInactiveBackground: "#36205a",
       scrollbarSliderBackground: "#4f357699", scrollbarSliderHoverBackground: "#6f5a93cc", scrollbarSliderActiveBackground: "#ff5fa899",
       black: "#2a1a44", red: "#ff5a5f", green: "#7ee081", yellow: "#ffc93c", blue: "#7ea6ff", magenta: "#ff5fa8", cyan: "#4dd8e8", white: "#e8dcc8",
-      brightBlack: "#6f5a93", brightRed: "#ff8487", brightGreen: "#a3efa5", brightYellow: "#ffdd7a", brightBlue: "#a5c2ff", brightMagenta: "#ff8fc4", brightCyan: "#86e8f2", brightWhite: "#fffaf0",
+      brightBlack: "#8a76ad", brightRed: "#ff8487", brightGreen: "#a3efa5", brightYellow: "#ffdd7a", brightBlue: "#a5c2ff", brightMagenta: "#ff8fc4", brightCyan: "#86e8f2", brightWhite: "#fffaf0",
     },
     css: { bg: "#1a0b2e", panel: "#25123f", line: "#4f3576", text: "#fff4e0", muted: "#b9a7d3", accent: "#ff5fa8", danger: "#ff8487" },
     quotes: [
