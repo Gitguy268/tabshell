@@ -11,6 +11,7 @@ export async function dockerAvailable() {
 export function startDocker(term, { onStatus }) {
   const enc = new TextEncoder();
   let ws, dec, stopped = false, ended = false;
+  let early = []; // keys typed while connecting, sent once the shell is there
 
   async function connect() {
     ended = false;
@@ -31,6 +32,8 @@ export function startDocker(term, { onStatus }) {
     ws.binaryType = "arraybuffer";
     ws.onopen = () => {
       ws.send(enc.encode(JSON.stringify({ AuthToken: token, columns: term.cols, rows: term.rows })));
+      for (const data of early) sendFrame("0", data);
+      early = [];
       onStatus(`Ubuntu 26.04 · 64-bit · ${runtime === "container" ? "container" : "Docker"}`);
     };
     ws.onmessage = e => {
@@ -42,6 +45,7 @@ export function startDocker(term, { onStatus }) {
 
   function end(message) {
     ended = true;
+    early = [];
     onStatus(message);
     term.write(`\r\n\x1b[2m[${message}. Press any key to start a new shell.]\x1b[0m\r\n`);
   }
@@ -59,7 +63,11 @@ export function startDocker(term, { onStatus }) {
   connect();
 
   return {
-    send: data => ended ? connect() : sendFrame("0", data),
+    send: data => {
+      if (ended) connect();
+      else if (ws?.readyState === WebSocket.OPEN) sendFrame("0", data);
+      else early.push(data);
+    },
     resize: () => sendFrame("1", JSON.stringify({ columns: term.cols, rows: term.rows })),
     async stop() { stopped = true; ws?.close(); },
     async reset() {

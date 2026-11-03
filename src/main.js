@@ -44,7 +44,8 @@ function showQuote() {
   quote.hidden = !quotes.length;
   if (!quotes.length) return;
   quote.textContent = quotes[quoteAt % quotes.length];
-  quote.title = quote.textContent + " (click for another)";
+  quote.title = quote.textContent + (quotes.length > 1 ? " (click for another)" : "");
+  quote.disabled = quotes.length < 2;
 }
 
 function applyTheme() {
@@ -77,7 +78,11 @@ $("#theme").addEventListener("change", e => {
   applyTheme();
   term.focus();
 });
-$("#quote").addEventListener("click", () => { quoteAt++; showQuote(); term.focus(); });
+$("#quote").addEventListener("click", e => {
+  quoteAt++;
+  showQuote();
+  if (e.detail) term.focus(); // keyboard presses (detail 0) keep focus here, to step through the lines
+});
 
 const fit = new FitAddon();
 term.loadAddon(fit);

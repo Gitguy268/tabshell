@@ -8,6 +8,7 @@ const DB = "tabshell";
 const KEY = "vm-state";
 const SAVE_WHEN_QUIET_MS = 5_000;
 const SAVE_EVERY_MS = 60_000; // for nonstop output, such as a game
+const RUNNING = "Alpine Linux · 32-bit · in your browser";
 
 const idb = (mode, fn) => new Promise((resolve, reject) => {
   const open = indexedDB.open(DB, 1);
@@ -28,8 +29,23 @@ const clearState = () => idb("readwrite", s => s.delete(KEY));
 export function startVm(term, { relay, onStatus }) {
   let emulator, dirty = false, saving = null, stopped = false, timer, quiet, input = new Uint8Array(0), flushing = false;
   // Only one tab saves the VM: two would each keep overwriting the other's work. The lock is released on stop or reset.
-  let owner = true, release;
+  // A tab that starts second waits in line and takes over saving when the first one closes.
+  let owner = false, release;
   const locked = new Promise(r => { release = r; });
+  const hold = lock => { if (lock && !stopped) owner = true; return lock && locked; };
+  const ownership = !navigator.locks ? Promise.resolve(owner = true)
+    : new Promise(decided => navigator.locks.request("tabshell-vm", { ifAvailable: true }, lock => { const held = hold(lock); decided(); return held; })
+      .catch(() => { owner = true; decided(); }))
+      .then(() => {
+        if (owner || stopped) return;
+        navigator.locks.request("tabshell-vm", lock => {
+          if (stopped) return;
+          hold(lock);
+          touch(); // saves this tab's VM soon, now that it's the one kept
+          if (emulator) onStatus(RUNNING);
+          return locked;
+        }).catch(() => {});
+      });
   const enc = new TextEncoder();
   const dec = new TextDecoder();
   // v86 (0.5.463 to 0.5.472) writes this pair into the Linux resize message in reverse, so rows go first to arrive as cols×rows.
@@ -68,13 +84,8 @@ export function startVm(term, { relay, onStatus }) {
   const onHidden = () => document.visibilityState === "hidden" && save();
 
   async function boot() {
-    if (navigator.locks) {
-      owner = await new Promise(got => navigator.locks.request("tabshell-vm", { ifAvailable: true }, lock => {
-        got(!!lock);
-        return lock && locked;
-      }).catch(() => got(true)));
-    }
-    if (stopped) return release();
+    await ownership;
+    if (stopped) return;
     const stored = await loadState();
     const saved = stored?.image === __IMAGE_ID__ ? stored.buf : undefined;
     if (stopped) return;
@@ -98,17 +109,16 @@ export function startVm(term, { relay, onStatus }) {
       autostart: true,
     });
 
-    const running = owner ? "Alpine Linux · 32-bit · in your browser"
-      : "TabShell is open in another tab, which keeps the saved VM. Changes in this tab are not saved.";
+    const running = () => owner ? RUNNING : "TabShell is open in another tab, which keeps the saved VM. Changes in this tab are not saved.";
     let ready = false;
     emulator.add_listener("virtio-console0-output-bytes", bytes => {
       touch();
       term.write(dec.decode(bytes, { stream: true }));
-      if (!ready) { ready = true; onStatus(running); resize(); }
+      if (!ready) { ready = true; onStatus(running()); resize(); }
     });
     if (saved) {
       emulator.add_listener("emulator-started", () => {
-        onStatus(running);
+        onStatus(running());
         resize();
         // Ctrl+L makes the shell redraw its prompt in the empty terminal.
         send("\x0c");
@@ -140,6 +150,7 @@ export function startVm(term, { relay, onStatus }) {
       clearTimeout(quiet);
       document.removeEventListener("visibilitychange", onHidden);
       try {
+        await ownership;
         await saving;
         await emulator?.destroy();
         // Another tab still runs the saved VM and would save it back, so only the owner wipes it.
