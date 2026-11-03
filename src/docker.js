@@ -31,7 +31,7 @@ export function startDocker(term, { onStatus }) {
     ws.binaryType = "arraybuffer";
     ws.onopen = () => {
       ws.send(enc.encode(JSON.stringify({ AuthToken: token, columns: term.cols, rows: term.rows })));
-      onStatus(`Ubuntu 24.04 · 64-bit · ${runtime === "container" ? "container" : "Docker"}`);
+      onStatus(`Ubuntu 26.04 · 64-bit · ${runtime === "container" ? "container" : "Docker"}`);
     };
     ws.onmessage = e => {
       const data = new Uint8Array(e.data);

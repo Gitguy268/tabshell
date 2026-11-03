@@ -55,7 +55,7 @@ A real Linux terminal in a browser tab. Install packages, play terminal games, t
 
 | | Browser VM | Docker |
 |---|---|---|
-| Linux | Alpine 3.21, 32-bit (i686) | Ubuntu 24.04, 64-bit |
+| Linux | Alpine 3.24, 32-bit (i686) | Ubuntu 26.04, 64-bit |
 | Runs in | your browser, with [v86](https://github.com/copy/v86) (an x86 emulator compiled to WebAssembly) | a Docker container on your computer |
 | Needs | any modern browser | Docker Desktop or [container](https://github.com/apple/container), and `start.command` |
 | Install packages | `apk add python3` | `sudo apt install python3`, Homebrew |
@@ -149,7 +149,7 @@ browser: xterm.js + WebGL renderer
 <details>
 <summary><b>Docker mode details</b></summary>
 
-- `docker/Dockerfile` is Ubuntu 24.04 with ttyd, sudo and Homebrew's prerequisites. Python and Homebrew are left for you to install.
+- `docker/Dockerfile` is Ubuntu 26.04 with ttyd, sudo and Homebrew's prerequisites. Python and Homebrew are left for you to install.
 - `server.mjs` uses only Node's standard library. It:
   - creates the container `tabshell-linux` the first time it's needed;
   - starts it again later;

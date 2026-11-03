@@ -55,10 +55,10 @@ Adapted from v86 (BSD 2-Clause, Copyright (c) 2012, The v86 contributors)
 - image/Dockerfile, based on v86's tools/docker/alpine/Dockerfile.
 
 Built into the Browser VM image (public/alpine/, built by scripts/build-image.sh)
-- Alpine Linux 3.21 packages, including the Linux kernel, BusyBox, OpenRC,
+- Alpine Linux 3.24 packages, including the Linux kernel, BusyBox, OpenRC,
   Node.js and npm, each under its own licence (GPL-2.0 for the kernel and
   BusyBox). Sources for every package: https://gitlab.alpinelinux.org/alpine/aports
-  and the mirrors at https://dl-cdn.alpinelinux.org/alpine/v3.21/
+  and the mirrors at https://dl-cdn.alpinelinux.org/alpine/v3.24/
 - snek (npm package snekjs 1.0.4), Copyright (c) Tania Rascia. MIT License.
   https://github.com/taniarascia/snek
 - blessed, Copyright (c) Christopher Jeffrey. MIT License. https://github.com/chjj/blessed
@@ -71,7 +71,7 @@ Built into both images from sibling checkouts, when present (scripts/build-tools
 - podman and its dependencies, from the distribution's packages. Apache License 2.0. https://github.com/containers/podman
 
 Installed in the Docker-mode container (docker/Dockerfile, not redistributed)
-- Ubuntu 24.04 packages, including ttyd (MIT License, https://github.com/tsl0922/ttyd).
+- Ubuntu 26.04 packages, including ttyd (MIT License, https://github.com/tsl0922/ttyd).
 
 Network service used by default
 - The Browser VM connects to the public Wisp server wisp.mercurywork.shop,
