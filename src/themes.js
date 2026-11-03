@@ -1,16 +1,40 @@
 // Terminal and page colours. Each entry is plain data, so the tests can check it without a browser.
 // Nujabes and Ye: Graduation are unofficial tributes; NOTICE says where their colours and words come from.
+// "scheme" sets the page's color-scheme (native controls, scrollbars) and decides which ANSI colours count as backgrounds.
 export const themes = {
   default: {
     label: "Default",
-    xterm: { background: "#0d1117", foreground: "#e6edf3", cursor: "#5fd68a", selectionBackground: "#264f78" },
+    scheme: "dark",
+    xterm: {
+      background: "#0d1117", foreground: "#e6edf3", cursor: "#5fd68a", cursorAccent: "#0d1117",
+      selectionBackground: "#264f78", selectionInactiveBackground: "#1f3550",
+      scrollbarSliderBackground: "#30363d99", scrollbarSliderHoverBackground: "#484f58cc", scrollbarSliderActiveBackground: "#5fd68a99",
+      black: "#3b434d", red: "#ff7b72", green: "#5fd68a", yellow: "#e3b341", blue: "#6cb6ff", magenta: "#d2a8ff", cyan: "#56d4dd", white: "#c9d1d9",
+      brightBlack: "#7d8590", brightRed: "#ffa198", brightGreen: "#8ee6a8", brightYellow: "#f2cc60", brightBlue: "#9ccfff", brightMagenta: "#e2c5ff", brightCyan: "#8ae6ec", brightWhite: "#ffffff",
+    },
     css: { bg: "#0d1117", panel: "#161b22", line: "#30363d", text: "#e6edf3", muted: "#8b949e", accent: "#5fd68a", danger: "#f2716b" },
+    quotes: [],
+  },
+  light: {
+    label: "Light",
+    scheme: "light",
+    xterm: {
+      background: "#ffffff", foreground: "#1f2328", cursor: "#1a7f37", cursorAccent: "#ffffff",
+      selectionBackground: "#b6d7ff", selectionInactiveBackground: "#dde9f7",
+      scrollbarSliderBackground: "#d0d7de99", scrollbarSliderHoverBackground: "#afb8c1cc", scrollbarSliderActiveBackground: "#1a7f3799",
+      black: "#1f2328", red: "#c4232f", green: "#1a7f37", yellow: "#8a5a00", blue: "#0b62d6", magenta: "#8250df", cyan: "#0e7490", white: "#656d76",
+      brightBlack: "#57606a", brightRed: "#a40e26", brightGreen: "#116329", brightYellow: "#6f4400", brightBlue: "#0550ae", brightMagenta: "#6639ba", brightCyan: "#155e75", brightWhite: "#8c959f",
+    },
+    css: { bg: "#ffffff", panel: "#f6f8fa", line: "#d0d7de", text: "#1f2328", muted: "#59636e", accent: "#1a7f37", danger: "#cf222e" },
     quotes: [],
   },
   nujabes: {
     label: "Nujabes",
+    scheme: "dark",
     xterm: {
-      background: "#0d0a11", foreground: "#e3dcda", cursor: "#b26ac6", cursorAccent: "#0d0a11", selectionBackground: "#3d2456",
+      background: "#0d0a11", foreground: "#e3dcda", cursor: "#b26ac6", cursorAccent: "#0d0a11",
+      selectionBackground: "#3d2456", selectionInactiveBackground: "#2a1b3a",
+      scrollbarSliderBackground: "#3d2f4899", scrollbarSliderHoverBackground: "#5a4668cc", scrollbarSliderActiveBackground: "#b26ac699",
       black: "#231a2b", red: "#c56e6f", green: "#9aa06b", yellow: "#e0c25a", blue: "#8f74e8", magenta: "#dc7fcc", cyan: "#7fa8b0", white: "#c9c0bd",
       brightBlack: "#7d747a", brightRed: "#dd8189", brightGreen: "#b6bb85", brightYellow: "#f2e06a", brightBlue: "#a894f0", brightMagenta: "#e79ad8", brightCyan: "#9cc3ca", brightWhite: "#fdf7f7",
     },
@@ -19,8 +43,11 @@ export const themes = {
   },
   graduation: {
     label: "Ye: Graduation",
+    scheme: "dark",
     xterm: {
-      background: "#1a0b2e", foreground: "#fff4e0", cursor: "#ffc93c", cursorAccent: "#1a0b2e", selectionBackground: "#4a2a78",
+      background: "#1a0b2e", foreground: "#fff4e0", cursor: "#ffc93c", cursorAccent: "#1a0b2e",
+      selectionBackground: "#4a2a78", selectionInactiveBackground: "#36205a",
+      scrollbarSliderBackground: "#4f357699", scrollbarSliderHoverBackground: "#6f5a93cc", scrollbarSliderActiveBackground: "#ff5fa899",
       black: "#2a1a44", red: "#ff5a5f", green: "#7ee081", yellow: "#ffc93c", blue: "#7ea6ff", magenta: "#ff5fa8", cyan: "#4dd8e8", white: "#e8dcc8",
       brightBlack: "#6f5a93", brightRed: "#ff8487", brightGreen: "#a3efa5", brightYellow: "#ffdd7a", brightBlue: "#a5c2ff", brightMagenta: "#ff8fc4", brightCyan: "#86e8f2", brightWhite: "#fffaf0",
     },

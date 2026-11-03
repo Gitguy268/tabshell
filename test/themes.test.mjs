@@ -19,30 +19,39 @@ function contrast(a, b) {
 }
 
 test("the default theme keeps TabShell's original look", () => {
-  assert.deepEqual(themes.default.xterm, { background: "#0d1117", foreground: "#e6edf3", cursor: "#5fd68a", selectionBackground: "#264f78" });
+  const { background, foreground, cursor, selectionBackground } = themes.default.xterm;
+  assert.deepEqual({ background, foreground, cursor, selectionBackground }, { background: "#0d1117", foreground: "#e6edf3", cursor: "#5fd68a", selectionBackground: "#264f78" });
   assert.deepEqual(themes.default.quotes, []);
 });
 
 for (const [id, t] of Object.entries(themes)) {
   test(`${id} defines every page colour`, () => {
+    assert.ok(t.scheme === "dark" || t.scheme === "light");
     assert.deepEqual(Object.keys(t.css).sort(), [...cssVars].sort());
+    for (const [name, value] of Object.entries(t.css)) assert.match(value, /^#[0-9a-f]{6}$/, name);
     assert.ok(contrast(t.css.text, t.css.panel) >= 4.5);
     assert.ok(contrast(t.css.muted, t.css.panel) >= 4.5);
     assert.ok(contrast(t.css.danger, t.css.panel) >= 4.5);
+    assert.ok(contrast(t.css.accent, t.css.panel) >= 3, "focus rings and the active mode need to show");
+    assert.equal(t.css.bg, t.xterm.background, "the page and terminal share one background");
   });
-}
 
-for (const id of ["nujabes", "graduation"]) {
-  const { xterm, quotes } = themes[id];
   test(`${id} has all 16 terminal colours, readable on its background`, () => {
-    for (const name of ansi) assert.match(xterm[name], /^#[0-9a-f]{6}$/, name);
-    // Black and bright black are mainly backgrounds and faint text.
-    for (const name of ansi.filter(n => !/^(bright)?black$/i.test(n))) {
+    const { xterm } = t;
+    for (const [name, value] of Object.entries(xterm)) assert.match(value, /^#[0-9a-f]{6}([0-9a-f]{2})?$/, name);
+    for (const name of ansi) assert.ok(xterm[name], name);
+    // The colours nearest the background are mainly used as backgrounds and faint text.
+    const backgroundish = t.scheme === "dark" ? /^(bright)?black$/i : /^(bright)?white$/i;
+    for (const name of ansi.filter(n => !backgroundish.test(n))) {
       const ratio = contrast(xterm[name], xterm.background);
       assert.ok(ratio >= 4.5, `${name} is only ${ratio.toFixed(1)}:1`);
     }
     assert.ok(contrast(xterm.foreground, xterm.background) >= 4.5);
     assert.ok(contrast(xterm.foreground, xterm.selectionBackground) >= 4.5);
+    assert.ok(contrast(xterm.cursor, xterm.background) >= 3, "cursor");
   });
-  test(`${id} has a line to show`, () => assert.ok(quotes.length > 0));
+}
+
+for (const id of ["nujabes", "graduation"]) {
+  test(`${id} has a line to show`, () => assert.ok(themes[id].quotes.length > 0));
 }

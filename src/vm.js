@@ -27,6 +27,9 @@ const clearState = () => idb("readwrite", s => s.delete(KEY));
 
 export function startVm(term, { relay, onStatus }) {
   let emulator, dirty = false, saving = null, stopped = false, timer, quiet, input = new Uint8Array(0), flushing = false;
+  // Only one tab saves the VM: two would each keep overwriting the other's work. The lock is released on stop or reset.
+  let owner = true, release;
+  const locked = new Promise(r => { release = r; });
   const enc = new TextEncoder();
   const dec = new TextDecoder();
   // v86 0.5.463 writes this pair into the Linux resize message in reverse, so rows go first to arrive as cols×rows.
@@ -47,7 +50,7 @@ export function startVm(term, { relay, onStatus }) {
   }
   function send(data) {
     touch();
-    const bytes = enc.encode(data);
+    const bytes = typeof data === "string" ? enc.encode(data) : data;
     const merged = new Uint8Array(input.length + bytes.length);
     merged.set(input);
     merged.set(bytes, input.length);
@@ -56,7 +59,7 @@ export function startVm(term, { relay, onStatus }) {
   }
 
   async function save() {
-    if (!emulator || !dirty || saving || stopped) return saving;
+    if (!emulator || !dirty || saving || stopped || !owner) return saving;
     dirty = false;
     saving = emulator.save_state().then(storeState).catch(err => { dirty = true; console.warn("TabShell: saving VM failed", err); })
       .finally(() => { saving = null; });
@@ -65,6 +68,13 @@ export function startVm(term, { relay, onStatus }) {
   const onHidden = () => document.visibilityState === "hidden" && save();
 
   async function boot() {
+    if (navigator.locks) {
+      owner = await new Promise(got => navigator.locks.request("tabshell-vm", { ifAvailable: true }, lock => {
+        got(!!lock);
+        return lock && locked;
+      }).catch(() => got(true)));
+    }
+    if (stopped) return release();
     const stored = await loadState();
     const saved = stored?.image === __IMAGE_ID__ ? stored.buf : undefined;
     if (stopped) return;
@@ -88,15 +98,17 @@ export function startVm(term, { relay, onStatus }) {
       autostart: true,
     });
 
+    const running = owner ? "Alpine Linux · 32-bit · in your browser"
+      : "TabShell is open in another tab, which keeps the saved VM. Changes in this tab are not saved.";
     let ready = false;
     emulator.add_listener("virtio-console0-output-bytes", bytes => {
       touch();
       term.write(dec.decode(bytes, { stream: true }));
-      if (!ready) { ready = true; onStatus("Alpine Linux · 32-bit · in your browser"); resize(); }
+      if (!ready) { ready = true; onStatus(running); resize(); }
     });
     if (saved) {
       emulator.add_listener("emulator-started", () => {
-        onStatus("Alpine Linux · 32-bit · in your browser");
+        onStatus(running);
         resize();
         // Ctrl+L makes the shell redraw its prompt in the empty terminal.
         send("\x0c");
@@ -116,18 +128,24 @@ export function startVm(term, { relay, onStatus }) {
       clearInterval(timer);
       clearTimeout(quiet);
       document.removeEventListener("visibilitychange", onHidden);
-      await save();
-      stopped = true;
-      await emulator?.destroy();
+      try {
+        await save();
+        stopped = true;
+        await emulator?.destroy();
+      } finally { stopped = true; release(); }
     },
     async reset() {
       stopped = true;
       clearInterval(timer);
       clearTimeout(quiet);
       document.removeEventListener("visibilitychange", onHidden);
-      await saving;
-      await emulator?.destroy();
-      await clearState();
+      try {
+        await saving;
+        await emulator?.destroy();
+        // Another tab still runs the saved VM and would save it back, so only the owner wipes it.
+        if (!owner) throw new Error("close TabShell in your other tabs first");
+        await clearState();
+      } finally { release(); }
     },
   };
 }

@@ -6,7 +6,21 @@
   <title>TabShell</title>
   <meta name="description" content="A real Linux terminal in a browser tab: Alpine Linux in a v86 VM, or full Ubuntu through Docker. Reset wipes everything.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23101418'/%3E%3Cpath d='M8 10l6 6-6 6' stroke='%235fd68a' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M16 23h8' stroke='%23e6edf3' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+  <meta name="theme-color" content="#161b22">
   <link rel="stylesheet" href="/src/style.css">
+  <!-- Paints the saved theme before anything shows, so a reload doesn't flash the Default colours. main.js writes theme-paint. -->
+  <script>
+    try {
+      const paint = JSON.parse(localStorage.getItem("theme-paint"));
+      const p = paint && paint[matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"];
+      if (p) {
+        const root = document.documentElement;
+        for (const k in p) if (k !== "scheme") root.style.setProperty("--" + k, p[k]);
+        root.style.colorScheme = p.scheme;
+        document.querySelector('meta[name="theme-color"]').content = p.panel;
+      }
+    } catch {}
+  </script>
 </head>
 <body>
   <header>
@@ -16,7 +30,7 @@
       <button type="button" role="radio" data-mode="docker" aria-checked="false" title="Ubuntu 24.04 (64-bit) in a Docker container on this computer">Docker</button>
     </div>
     <span id="status" role="status" aria-live="polite"></span>
-    <span id="quote" hidden></span>
+    <button type="button" id="quote" hidden></button>
     <div class="actions">
       <select id="theme" aria-label="Theme"></select>
       <button type="button" id="settings-btn" aria-expanded="false" aria-controls="settings">Network</button>
