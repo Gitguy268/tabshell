@@ -32,7 +32,9 @@ export function startDocker(term, { onStatus }) {
     ws.binaryType = "arraybuffer";
     ws.onopen = () => {
       ws.send(enc.encode(JSON.stringify({ AuthToken: token, columns: term.cols, rows: term.rows })));
-      for (const data of early) sendFrame("0", data);
+      // A paste caught here came before bash turned on bracketed paste, so mark it as one: bash then inserts
+      // it as text instead of running each line. Single keys, Enter included, go as typed.
+      for (const data of early) sendFrame("0", data.length > 1 && /[\r\n]/.test(data) ? `\x1b[200~${data}\x1b[201~` : data);
       early = [];
       onStatus(`Ubuntu 26.04 · 64-bit · ${runtime === "container" ? "container" : "Docker"}`);
     };

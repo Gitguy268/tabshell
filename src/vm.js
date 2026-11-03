@@ -32,7 +32,7 @@ export function startVm(term, { relay, onStatus }) {
   // A tab that starts second waits in line and takes over saving when the first one closes.
   let owner = false, release;
   const locked = new Promise(r => { release = r; });
-  const hold = lock => { if (lock && !stopped) owner = true; return lock && locked; };
+  const hold = lock => { if (lock) owner = true; return lock && locked; };
   const ownership = !navigator.locks ? Promise.resolve(owner = true)
     : new Promise(decided => navigator.locks.request("tabshell-vm", { ifAvailable: true }, lock => { const held = hold(lock); decided(); return held; })
       .catch(() => { owner = true; decided(); }))
