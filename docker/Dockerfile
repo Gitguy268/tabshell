@@ -1,5 +1,5 @@
 # Full 64-bit Ubuntu for TabShell's Docker mode. ttyd serves the shell over a WebSocket.
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 
 ENV DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8 LC_ALL=C.UTF-8 TERM=xterm-256color
 
@@ -11,7 +11,7 @@ RUN apt-get update \
 # Homebrew refuses to run as root, so the shell runs as "dev" with passwordless sudo.
 RUN userdel -r ubuntu 2>/dev/null; useradd -m -s /bin/bash -u 1000 dev \
  && echo 'dev ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/dev \
- && printf '\nWelcome to TabShell (Ubuntu 24.04 in Docker).\n  sudo apt install python3\n  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"\n  spf\n  opencode\n  container run --rm alpine echo hi\n\n' > /etc/motd \
+ && printf '\nWelcome to TabShell (Ubuntu 26.04 in Docker).\n  sudo apt install python3\n  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"\n  spf\n  opencode\n  container run --rm alpine echo hi\n\n' > /etc/motd \
  && echo 'cat /etc/motd' >> /home/dev/.bashrc
 
 # Podman behind the `container` command. Rootless podman can't mount /proc in an apple/container VM, so `container`

@@ -55,7 +55,7 @@ A real Linux terminal in a browser tab. Install packages, play terminal games, t
 
 | | Browser VM | Docker |
 |---|---|---|
-| Linux | Alpine 3.21, 32-bit (i686) | Ubuntu 24.04, 64-bit |
+| Linux | Alpine 3.24, 32-bit (i686) | Ubuntu 26.04, 64-bit |
 | Runs in | your browser, with [v86](https://github.com/copy/v86) (an x86 emulator compiled to WebAssembly) | a Docker container on your computer |
 | Needs | any modern browser | Docker Desktop or [container](https://github.com/apple/container), and `start.command` |
 | Install packages | `apk add python3` | `sudo apt install python3`, Homebrew |
@@ -64,7 +64,7 @@ A real Linux terminal in a browser tab. Install packages, play terminal games, t
 
 \* Built from the [superfile](https://github.com/yorukot/superfile), [opencode](https://github.com/anomalyco/opencode) and [container](https://github.com/apple/container) forks when they're checked out next to TabShell (`../superfile`, `../opencode`, `../container`); `scripts/build-tools.sh` skips any that are missing. `container` on Linux is the fork's podman front-end (`docs/linux.md` in the container fork): `container run --rm alpine echo hi`, `container ls -a`, `container here alpine sh`.
 
-Both modes share one terminal: [xterm.js](https://github.com/xtermjs/xterm.js) drawing on the GPU through its WebGL renderer, with resize, colours, mouse and full-screen programs. The header's theme menu switches the terminal and page between Default, Nujabes and Ye: Graduation, and remembers your choice. The two named themes also show a line of text in the header. They are unofficial tributes; see [NOTICE](NOTICE).
+Both modes share one terminal: [xterm.js](https://github.com/xtermjs/xterm.js) drawing on the GPU through its WebGL renderer, with resize, colours, mouse and full-screen programs. The header's theme menu switches the terminal and page between Default, Light, Nujabes and Ye: Graduation, or follows your system's light or dark setting, and remembers your choice. Every theme has a full 16-colour palette that the tests check for readable contrast. The two named themes also show a line of text in the header; with Ye: Graduation, click it for another. They are unofficial tributes; see [NOTICE](NOTICE).
 
 - **Reset** throws the machine away and starts a fresh one: files, packages, history and the screen.
 - **Clear** only clears the screen.
@@ -149,7 +149,7 @@ browser: xterm.js + WebGL renderer
 <details>
 <summary><b>Docker mode details</b></summary>
 
-- `docker/Dockerfile` is Ubuntu 24.04 with ttyd, sudo and Homebrew's prerequisites. Python and Homebrew are left for you to install.
+- `docker/Dockerfile` is Ubuntu 26.04 with ttyd, sudo and Homebrew's prerequisites. Python and Homebrew are left for you to install.
 - `server.mjs` uses only Node's standard library. It:
   - creates the container `tabshell-linux` the first time it's needed;
   - starts it again later;

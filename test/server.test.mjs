@@ -34,6 +34,10 @@ test("blocks path traversal", async () => {
   assert.notEqual((await call("/%2e%2e/package.json")).status, 200);
 });
 
+test("answers a malformed path with 400, not a crash", async () => {
+  assert.equal((await call("/%E0%A4%A")).status, 400);
+});
+
 test("refuses WebSocket upgrades from other origins", async () => {
   const res = await new Promise((resolve, reject) => {
     const req = request({ host: "127.0.0.1", port: 18686, path: "/ws", headers: {
