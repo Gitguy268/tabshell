@@ -19,6 +19,16 @@ A real Linux terminal in a browser tab. Install packages, play terminal games, t
 **Live:** [gitguy268.github.io/tabshell](https://gitguy268.github.io/tabshell/) · [tabshell.vercel.app](https://tabshell.vercel.app)
 <!-- /live-links -->
 
+## Install with Homebrew
+
+```sh
+brew trust gitguy268/tap
+brew install gitguy268/tap/tabshell
+tabshell
+```
+
+Then open <http://localhost:8686/>. The browser VM works right away; for Docker mode, start Docker and run `tabshell docker-image` once.
+
 <!-- run-steps:start -->
 ## Run it locally, step by step
 
