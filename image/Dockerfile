@@ -1,5 +1,5 @@
 # Alpine i386 root filesystem for v86, adapted from v86's tools/docker/alpine.
-FROM docker.io/i386/alpine:3.24.3
+FROM docker.io/i386/alpine:3.24.4
 
 ENV KERNEL=virt
 
