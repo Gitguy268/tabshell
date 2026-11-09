@@ -15,7 +15,7 @@ const IMAGE = "tabshell-ubuntu";
 const ROOT = fileURLToPath(new URL("./dist/", import.meta.url));
 const ALLOWED_HOSTS = new Set([`127.0.0.1:${PORT}`, `localhost:${PORT}`]);
 const TYPES = { ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".mjs": "text/javascript", ".css": "text/css",
-  ".wasm": "application/wasm", ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png", ".ico": "image/x-icon" };
+  ".wasm": "application/wasm", ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png", ".webp": "image/webp", ".ico": "image/x-icon" };
 
 const exec = (bin, args, timeout = 60_000) => new Promise((resolve, reject) =>
   execFile(bin, args, { timeout }, (err, stdout, stderr) => err ? reject(new Error(stderr.trim() || err.message)) : resolve(stdout.trim())));
@@ -81,6 +81,8 @@ async function ttydReady({ host, port }) {
 }
 
 async function reset() {
+  // A start still in progress would hand back the container that's about to be removed.
+  await pending?.catch(() => {});
   await rt(await pick() === "container" ? "delete" : "rm", "--force", NAME).catch(() => {});
   return ensure();
 }
@@ -109,7 +111,9 @@ export const server = createServer(async (req, res) => {
       return json(res, 404, { error: "not found" });
     }
     if (req.method !== "GET" && req.method !== "HEAD") return json(res, 405, { error: "method" });
-    const path = normalize(join(ROOT, decodeURIComponent(url.pathname === "/" ? "/index.html" : url.pathname)));
+    let decoded;
+    try { decoded = decodeURIComponent(url.pathname === "/" ? "/index.html" : url.pathname); } catch { return json(res, 400, { error: "bad path" }); }
+    const path = normalize(join(ROOT, decoded));
     if (!path.startsWith(ROOT)) return json(res, 403, { error: "bad path" });
     const body = await readFile(path).catch(() => null);
     if (!body) return json(res, 404, { error: "not found" });

@@ -10,8 +10,8 @@ export async function dockerAvailable() {
 
 export function startDocker(term, { onStatus }) {
   const enc = new TextEncoder();
-  const dec = new TextDecoder();
-  let ws, stopped = false, ended = false;
+  let ws, dec, stopped = false, ended = false;
+  let early = []; // keys typed while connecting, sent once the shell is there
 
   async function connect() {
     ended = false;
@@ -19,17 +19,24 @@ export function startDocker(term, { onStatus }) {
     let token, runtime;
     try {
       const res = await fetch("/api/token", { cache: "no-store" });
-      ({ token, runtime } = await res.json());
-      if (!res.ok || !token) throw new Error("server said no");
-    } catch {
-      return end("Couldn't start the container. Is Docker Desktop or container running?");
+      const body = await res.json().catch(() => ({}));
+      ({ token, runtime } = body);
+      if (!res.ok || !token) throw new Error(body.error || res.statusText);
+    } catch (err) {
+      if (!stopped) end(`Couldn't start the container (${err.message}). Is Docker Desktop or container running?`);
+      return;
     }
     if (stopped) return;
+    dec = new TextDecoder();
     ws = new WebSocket(`ws://${location.host}/ws`, ["tty"]);
     ws.binaryType = "arraybuffer";
     ws.onopen = () => {
       ws.send(enc.encode(JSON.stringify({ AuthToken: token, columns: term.cols, rows: term.rows })));
-      onStatus(`Ubuntu 24.04 · 64-bit · ${runtime === "container" ? "container" : "Docker"}`);
+      // A paste caught here came before bash turned on bracketed paste, so mark it as one: bash then inserts
+      // it as text instead of running each line. Single keys, Enter included, go as typed.
+      for (const data of early) sendFrame("0", data.length > 1 && /[\r\n]/.test(data) && !data.startsWith("\x1b[200~") ? `\x1b[200~${data}\x1b[201~` : data);
+      early = [];
+      onStatus(`Ubuntu 26.04 · 64-bit · ${runtime === "container" ? "container" : "Docker"}`);
     };
     ws.onmessage = e => {
       const data = new Uint8Array(e.data);
@@ -40,16 +47,29 @@ export function startDocker(term, { onStatus }) {
 
   function end(message) {
     ended = true;
+    early = [];
     onStatus(message);
     term.write(`\r\n\x1b[2m[${message}. Press any key to start a new shell.]\x1b[0m\r\n`);
   }
 
-  const sendFrame = (type, payload) => ws?.readyState === WebSocket.OPEN && ws.send(enc.encode(type + payload));
+  // A frame is one type byte ("0" input, "1" resize) followed by the payload.
+  function sendFrame(type, payload) {
+    if (ws?.readyState !== WebSocket.OPEN) return;
+    const bytes = typeof payload === "string" ? enc.encode(payload) : payload;
+    const frame = new Uint8Array(bytes.length + 1);
+    frame[0] = type.charCodeAt(0);
+    frame.set(bytes, 1);
+    ws.send(frame);
+  }
 
   connect();
 
   return {
-    send: data => ended ? connect() : sendFrame("0", data),
+    send: data => {
+      if (ended) connect();
+      else if (ws?.readyState === WebSocket.OPEN) sendFrame("0", data);
+      else early.push(data);
+    },
     resize: () => sendFrame("1", JSON.stringify({ columns: term.cols, rows: term.rows })),
     async stop() { stopped = true; ws?.close(); },
     async reset() {
