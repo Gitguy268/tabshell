@@ -241,7 +241,7 @@ browser: xterm.js + WebGL renderer
 - **Shells after a reload.** Reloading in Docker mode starts a new shell. Files and packages stay, but programs running in the old shell are stopped.
 - **The assistant** is a 0.5B model. It can be wrong, which is why every answer waits for you. It needs about 600 MB of browser storage and memory while loaded.
 - **Shell switching** types `exec zsh -l` (or bash, fish) into the terminal, so it replaces whatever shell is at the prompt.
-- **Image updates.** When a new version of TabShell ships a changed Linux image, a VM saved on the old image can't be restored and you get a fresh one.
+- **Image updates.** When a new version of TabShell ships a changed Linux image, a VM saved on the old image can't be restored and you get a fresh one. `start.command` notices changed image sources and rebuilds both images. Your Docker-mode container keeps running the old image until you press **Reset** in Docker mode. With Homebrew, run `tabshell docker-image` again after upgrading.
 - **Browser storage.** A saved Browser VM is about 150 MB with Python installed, and grows with what you add. Clearing the site's data in your browser has the same effect as Reset.
 
 ## Contributing
