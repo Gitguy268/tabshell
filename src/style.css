@@ -83,7 +83,7 @@ button.danger:hover { border-color: var(--danger); }
 #quote:hover:enabled { color: var(--text); }
 #quote:disabled { opacity: 1; cursor: default; }
 #quote[hidden] { display: none; }
-.actions { display: flex; gap: 6px; }
+.actions { display: flex; flex-wrap: wrap; gap: 6px; }
 
 #theme {
   font: inherit;
@@ -156,4 +156,61 @@ dialog button.danger:hover { background: color-mix(in srgb, var(--danger) 85%, v
   header { padding: 8px; }
   #settings { grid-template-columns: 1fr; padding: 10px 8px; }
   #term { padding-left: 4px; }
+}
+
+/* Ask panel, Extras and Cheatsheet drawers */
+button.accent { border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); }
+button.accent:hover { border-color: var(--accent); }
+#shell { font: inherit; color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; cursor: pointer; }
+#shell:hover { border-color: var(--muted); }
+
+#ask, .drawer {
+  padding: 10px 16px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+}
+#ask[hidden], .drawer[hidden], #ask [hidden] { display: none; }
+.ask-row { display: flex; align-items: center; gap: 8px; }
+.ask-row label { font-weight: 600; }
+#ask input:not([type]), #ask select {
+  font: 13px ui-monospace, Menlo, monospace;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 5px 8px;
+  min-width: 0;
+}
+#ask-input, #ask-cmd { flex: 1; }
+#ask-cmd { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)) !important; }
+#ask-result { margin-top: 8px; }
+#ask-note { margin: 0 0 6px; font-size: 13px; }
+#ask-note.muted { color: var(--muted); }
+#ask-note.error, #ask-warn { color: var(--danger); }
+#ask-warn { margin: 6px 0 0; padding-left: 18px; font-size: 13px; }
+#ask-warn:empty { display: none; }
+#ask-download { margin-top: 8px; }
+#ask-download p { margin: 0 0 8px; color: var(--muted); font-size: 13px; }
+#ask progress { width: 100%; margin-top: 8px; accent-color: var(--accent); }
+#ask details { margin-top: 8px; color: var(--muted); font-size: 13px; }
+#ask summary { cursor: pointer; }
+.ask-options { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 6px; }
+
+.drawer { max-height: 45vh; overflow: auto; }
+.drawer > p { margin: 0 0 10px; color: var(--muted); font-size: 13px; }
+.drawer a { color: var(--accent); }
+#extras-list, #cheat-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px 24px; }
+.drawer h3 { margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.extra { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 8px; align-items: center; padding: 4px 0; border-top: 1px solid var(--line); }
+.extra a { font-weight: 600; text-decoration: none; }
+.extra span { grid-column: 1; color: var(--muted); font-size: 13px; }
+.extra button { grid-column: 2; grid-row: 1 / 3; }
+.cheat-group dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0; font-size: 13px; }
+.cheat-group dd { margin: 0; color: var(--muted); }
+kbd { font: 12px ui-monospace, Menlo, monospace; padding: 1px 5px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); white-space: nowrap; }
+
+@media (max-width: 600px) {
+  #ask, .drawer { padding: 10px 8px; }
+  .ask-row { flex-wrap: wrap; }
+  #extras-list, #cheat-list { grid-template-columns: 1fr; }
 }
