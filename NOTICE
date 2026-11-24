@@ -43,6 +43,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 Bundled in the web app
+- wllama (@wllama/wllama, including llama.cpp and ggml), Copyright (c) 2024 Xuan Son NGUYEN.
+  MIT License. https://github.com/ngxson/wllama. Loaded only when the assistant needs its model.
 - v86 (libv86.mjs, v86.wasm), Copyright (c) 2012, The v86 contributors.
   BSD 2-Clause License. https://github.com/copy/v86
 - SeaBIOS (public/bios/seabios.bin, vgabios.bin), from the v86 repository.
@@ -62,6 +64,38 @@ Built into the Browser VM image (public/alpine/, built by scripts/build-image.sh
 - snek (npm package snekjs 1.0.4), Copyright (c) Tania Rascia. MIT License.
   https://github.com/taniarascia/snek
 - blessed, Copyright (c) Christopher Jeffrey. MIT License. https://github.com/chjj/blessed
+
+Built into both images (image/Dockerfile, docker/Dockerfile), as distribution packages
+- zsh, Copyright (c) 1992-2017 Paul Falstad and others. The zsh licence (permissive);
+  some of its shell functions are under the GNU GPL, see the package's LICENCE.
+  https://github.com/zsh-users/zsh
+- fish shell, GNU GPL v2. https://github.com/fish-shell/fish-shell
+- bash (Browser VM), GNU GPL v3. git, GNU GPL v2. curl, the curl licence.
+- zsh-autosuggestions, MIT License; zsh-syntax-highlighting, BSD 3-Clause License;
+  fzf, MIT License; zoxide, MIT License; eza, EUPL-1.2.
+TabShell's own files under image/shell/ only configure and call these programs; none of their code is copied.
+
+Built into both images from a pinned commit
+- oh-my-fish (043699a), Copyright (c) 2018 Oh My Fish!. MIT License.
+  https://github.com/oh-my-fish/oh-my-fish
+
+Downloaded by the assistant when you ask for it (not bundled or redistributed)
+- Qwen2.5-Coder 0.5B NL2Bash GGUF by burhan2753y, fine-tuned from Qwen/Qwen2.5-Coder-0.5B-Instruct.
+  Apache License 2.0. https://huggingface.co/burhan2753y/qwen2.5-coder-0.5b-nl2bash-gguf
+- Qwen2.5-Coder 0.5B Instruct GGUF, Copyright (c) Alibaba Cloud (Qwen team). Apache License 2.0.
+  https://huggingface.co/Qwen/Qwen2.5-Coder-0.5B-Instruct-GGUF
+- K2-Horizon 0.9B System 1 GGUF, from IFM/K2-Horizon-0.9B. Apache License 2.0.
+  https://huggingface.co/Lucasgitguy-co/K2-Horizon-0.9B-System1-GGUF
+
+Lists used
+- Extras (src/extras.js, image/shell/extras): the choice of tools, their links and some
+  descriptions come from k4m4/terminals-are-sexy, CC0-1.0 (public domain dedication).
+  https://github.com/k4m4/terminals-are-sexy
+
+Ideas, no code
+- The cheatsheet (src/cheatsheet.js, image/shell/cheat) follows the idea of 0nn0/terminal-mac-cheatsheet,
+  a short list of the most used commands and shortcuts. That repository has no licence, so none of
+  its text was copied; TabShell's cheatsheet is written from scratch. https://github.com/0nn0/terminal-mac-cheatsheet
 
 Built into both images from sibling checkouts, when present (scripts/build-tools.sh, not in this repository)
 - superfile (spf), Copyright (c) yorukot and contributors. MIT License. https://github.com/yorukot/superfile

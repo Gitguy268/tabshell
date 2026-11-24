@@ -1,0 +1,44 @@
+// TabShell's cheatsheet: the `cheat` command in both images and the Cheatsheet panel on the page.
+// Original text; the idea of a short "most used commands and shortcuts" list comes from
+// 0nn0/terminal-mac-cheatsheet (no licence, so no text was copied).
+export const cheatsheet = [
+  ["Moving around the line", [
+    ["Ctrl+A / Ctrl+E", "start / end of the line"],
+    ["Alt+B / Alt+F", "back / forward one word"],
+    ["Ctrl+U / Ctrl+K", "delete to the start / to the end"],
+    ["Ctrl+W", "delete the word before the cursor"],
+    ["Ctrl+L", "clear the screen"],
+    ["Tab", "complete a command or file name"],
+  ]],
+  ["History", [
+    ["Up / Down", "previous / next command"],
+    ["Ctrl+R", "search old commands; Ctrl+R again for older matches"],
+    ["!!", "the last command again (sudo !! in Docker mode)"],
+    ["history", "list them all"],
+  ]],
+  ["Running things", [
+    ["Ctrl+C", "stop the running program"],
+    ["Ctrl+Z, then fg", "pause it, then bring it back; bg keeps it going behind"],
+    ["cmd1 && cmd2", "run cmd2 only if cmd1 worked"],
+    ["cmd > file", "save the output in a file; >> adds to the end"],
+    ["cmd1 | cmd2", "feed one program's output to the next"],
+  ]],
+  ["Files", [
+    ["ls -la", "everything here, with sizes and hidden files"],
+    ["cd -", "back to the previous folder"],
+    ["cd ~", "home"],
+    ["mkdir -p a/b/c", "make folders, parents too"],
+    ["cp -r / mv / rm -r", "copy / move / delete (rm can't be undone)"],
+    ["less file", "read a file; q quits, / searches"],
+  ]],
+  ["Shells (the Shell menu switches)", [
+    ["zsh", "suggestions as you type (Right arrow accepts) and colours"],
+    ["fish", "the friendliest; omf help for oh-my-fish"],
+    ["exit", "leave this shell"],
+  ]],
+  ["TabShell", [
+    ["Ctrl+Shift+Space", "ask in plain English: \"install python\", \"find big files\""],
+    ["a typo", "a mistyped command offers a fix (in bash, zsh and fish)"],
+    ["extras", "more tools to install"],
+  ]],
+];

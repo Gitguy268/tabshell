@@ -19,13 +19,22 @@ fi
 # spf, opencode and container from sibling checkouts of the forks; skipped when they aren't there.
 [ -e tools/ubuntu/container ] || ./scripts/build-tools.sh
 
-if [ ! -f public/alpine/fs.json ]; then
-  if docker_up; then ./scripts/build-image.sh || exit 1
-  else echo "Building the Browser VM image needs Docker the first time. Install Docker Desktop and run this again."; read -rp "Press Enter to close."; exit 1; fi
+# Each image remembers a hash of the files it was built from, so an update that changes them
+# rebuilds it. A rebuilt Browser VM image starts fresh VMs, as on the hosted page.
+src_hash() { find "$@" -type f ! -name '._*' 2>/dev/null | LC_ALL=C sort | xargs cat | shasum | cut -c1-16; }
+VM_SRC=$(src_hash image scripts/build-image.sh scripts/fs2json.py scripts/copy-to-sha256.py)
+UBUNTU_SRC=$(src_hash docker image/shell)
+if [ ! -f public/alpine/fs.json ] || [ "$(cat public/alpine/.source 2>/dev/null)" != "$VM_SRC" ]; then
+  if docker_up; then
+    [ -f public/alpine/fs.json ] && echo "TabShell's Linux image changed; rebuilding it (a few minutes)..."
+    ./scripts/build-image.sh && echo "$VM_SRC" > public/alpine/.source || exit 1
+  elif [ ! -f public/alpine/fs.json ]; then
+    echo "Building the Browser VM image needs Docker the first time. Install Docker Desktop and run this again."; read -rp "Press Enter to close."; exit 1
+  fi
 fi
-if docker_up && ! docker image inspect tabshell-ubuntu >/dev/null 2>&1; then
-  echo "Building the Ubuntu image for Docker mode (one time, a few minutes)..."
-  docker build -t tabshell-ubuntu -f docker/Dockerfile . || exit 1
+if docker_up && [ "$(docker image inspect -f '{{index .Config.Labels "tabshell.source"}}' tabshell-ubuntu 2>/dev/null)" != "$UBUNTU_SRC" ]; then
+  echo "Building the Ubuntu image for Docker mode (a few minutes)..."
+  docker build --label "tabshell.source=$UBUNTU_SRC" -t tabshell-ubuntu -f docker/Dockerfile . || exit 1
 fi
 # Without Docker, Docker mode runs on apple/container when its services are started.
 container_up() { command -v container >/dev/null && container system status >/dev/null 2>&1; }

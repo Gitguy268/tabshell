@@ -4,6 +4,10 @@ import { WebglAddon } from "@xterm/addon-webgl";
 import { startVm, DEFAULT_RELAY } from "./vm.js";
 import { startDocker, dockerAvailable } from "./docker.js";
 import { themes } from "./themes.js";
+import { createAssist } from "./assist.js";
+import { parseHook, systems, installCommand } from "./assist-core.js";
+import { extras } from "./extras.js";
+import { cheatsheet } from "./cheatsheet.js";
 
 const $ = s => document.querySelector(s);
 const status = $("#status");
@@ -99,11 +103,100 @@ try {
   console.warn("TabShell: WebGL renderer unavailable, using DOM renderer", err);
 }
 fit.fit();
-new ResizeObserver(() => fit.fit()).observe($("#term"));
+// After a panel opens or closes, fit to the new size and repaint every row.
+const refit = () => { fit.fit(); term.refresh(0, term.rows - 1); };
+new ResizeObserver(refit).observe($("#term"));
 
 let mode = store.get("mode") === "docker" ? "docker" : "vm";
 let backend = null;
 const onStatus = text => { status.textContent = text; };
+
+// Shells. The images keep ash (Browser VM) or bash (Docker) as the login shell. The first login shell of a
+// session reports itself (OSC 7777 "ready;<name>", see image/shell/profile.sh), and the page then starts
+// the shell picked here. Ctrl+U first clears anything half-typed on the line.
+const SHELLS = ["default", "bash", "zsh", "fish"];
+let shellChoice = SHELLS.includes(store.get("shell")) ? store.get("shell") : "default";
+let currentShell = null;
+const wantedShell = () => (shellChoice === "default" ? (mode === "vm" ? "sh" : "bash") : shellChoice);
+function startShell(name) {
+  currentShell = name;
+  backend?.send(`\x15exec ${name} -l\r`);
+}
+$("#shell").value = shellChoice;
+$("#shell").addEventListener("change", e => {
+  shellChoice = SHELLS.includes(e.target.value) ? e.target.value : "default";
+  store.set("shell", shellChoice === "default" ? null : shellChoice);
+  if (backend && wantedShell() !== currentShell) startShell(wantedShell());
+  term.focus();
+});
+
+const assist = createAssist({
+  store,
+  run: cmd => { backend?.send(`\x15${cmd}\r`); },
+  context: () => ({ mode, shell: currentShell ?? wantedShell() }),
+  focusTerminal: () => term.focus(),
+  refit: () => requestAnimationFrame(refit),
+});
+window.tabshell.assist = assist;
+
+term.parser.registerOscHandler(7777, data => {
+  if (data.startsWith("ready;")) {
+    currentShell = data.slice(6);
+    if (wantedShell() !== currentShell) startShell(wantedShell());
+  } else {
+    const line = parseHook(data);
+    if (line) assist.fromHook(line);
+  }
+  return true;
+});
+
+// Ctrl+Shift+Space opens Ask from the terminal too; xterm.js would otherwise send it to the shell.
+const isAskKey = e => e.type === "keydown" && e.ctrlKey && e.shiftKey && e.code === "Space";
+term.attachCustomKeyEventHandler(e => {
+  if (!isAskKey(e)) return true;
+  e.preventDefault();
+  assist.toggle();
+  return false;
+});
+document.addEventListener("keydown", e => { if (isAskKey(e) && !e.defaultPrevented) { e.preventDefault(); assist.toggle(); } });
+$("#ask-btn").addEventListener("click", () => assist.toggle());
+
+// Extras and Cheatsheet drawers: one open at a time.
+const drawers = { extras: $("#extras"), cheat: $("#cheat") };
+function toggleDrawer(name, show = drawers[name].hidden) {
+  for (const [n, el] of Object.entries(drawers)) {
+    el.hidden = n === name ? !show : true;
+    $(`#${n}-btn`).setAttribute("aria-expanded", !el.hidden);
+  }
+  if (name === "extras" && show) renderExtras();
+  requestAnimationFrame(refit);
+}
+$("#extras-btn").addEventListener("click", () => toggleDrawer("extras"));
+$("#cheat-btn").addEventListener("click", () => toggleDrawer("cheat"));
+for (const d of Object.values(drawers)) d.addEventListener("keydown", e => { if (e.key === "Escape") { toggleDrawer("extras", false); term.focus(); } });
+
+const el = (tag, props = {}, ...kids) => { const n = Object.assign(document.createElement(tag), props); n.append(...kids); return n; };
+function renderExtras() {
+  const sys = systems[mode];
+  const groups = new Map();
+  for (const e of extras) groups.set(e.group, [...(groups.get(e.group) ?? []), e]);
+  $("#extras-list").replaceChildren(...[...groups].map(([group, items]) => el("div", { className: "extras-group" },
+    el("h3", { textContent: group }),
+    ...items.map(e => {
+      const cmd = e.script ?? (e[sys.manager] ? installCommand(sys, e[sys.manager]) : null);
+      const button = el("button", { type: "button", textContent: e.preinstalled ? "Installed" : cmd ? "Install" : "Not here", disabled: !cmd || e.preinstalled });
+      if (e.preinstalled) button.title = "Already in this image";
+      else if (!cmd) button.title = `Not packaged for ${mode === "vm" ? "Alpine" : "Ubuntu"}`;
+      button.addEventListener("click", () => { toggleDrawer("extras", false); assist.confirm(cmd, e.needs ? `${e.what} Needs ${e.needs}.` : e.what); });
+      return el("div", { className: "extra" },
+        el("a", { href: e.url, target: "_blank", rel: "noopener", textContent: e.name }),
+        el("span", { textContent: e.what }),
+        button);
+    }))));
+}
+$("#cheat-list").replaceChildren(...cheatsheet.map(([title, rows]) => el("div", { className: "cheat-group" },
+  el("h3", { textContent: title }),
+  el("dl", {}, ...rows.flatMap(([keys, what]) => [el("dt", {}, el("kbd", { textContent: keys })), el("dd", { textContent: what })])))));
 
 term.onData(data => backend?.send(data));
 // Binary data (old-style mouse reports) is one byte per character, not UTF-8.
@@ -112,6 +205,7 @@ term.onResize(() => backend?.resize());
 
 function start() {
   term.reset();
+  currentShell = null;
   for (const b of document.querySelectorAll(".modes button")) b.setAttribute("aria-checked", b.dataset.mode === mode);
   $("#settings-btn").hidden = mode !== "vm";
   if (mode !== "vm") toggleSettings(false);
@@ -187,7 +281,7 @@ const settings = $("#settings");
 function toggleSettings(show = settings.hidden) {
   settings.hidden = !show;
   $("#settings-btn").setAttribute("aria-expanded", show);
-  requestAnimationFrame(() => fit.fit());
+  requestAnimationFrame(refit);
 }
 $("#relay").value = store.get("relay") || "";
 $("#relay").placeholder = DEFAULT_RELAY;

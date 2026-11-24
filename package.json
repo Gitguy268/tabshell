@@ -1,6 +1,6 @@
 {
   "name": "tabshell",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A real Linux terminal in a browser tab: Alpine in v86, or Ubuntu through Docker. Reset wipes everything.",
   "scripts": {
     "dev": "vite",
@@ -13,6 +13,7 @@
   "license": "MIT",
   "type": "module",
   "dependencies": {
+    "@wllama/wllama": "3.13.0",
     "@xterm/addon-fit": "0.11.0",
     "@xterm/addon-webgl": "0.19.0",
     "@xterm/xterm": "6.0.0",

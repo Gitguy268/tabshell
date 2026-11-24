@@ -32,6 +32,15 @@
     <span id="status" role="status" aria-live="polite"></span>
     <button type="button" id="quote" hidden></button>
     <div class="actions">
+      <button type="button" id="ask-btn" class="accent" aria-expanded="false" aria-controls="ask" title="Ask for a command in plain English, or fix a mistyped one (Ctrl+Shift+Space)">Ask</button>
+      <button type="button" id="extras-btn" aria-expanded="false" aria-controls="extras" title="More tools to install, picked from terminals-are-sexy">Extras</button>
+      <button type="button" id="cheat-btn" aria-expanded="false" aria-controls="cheat" title="Shortcuts and basics">Cheatsheet</button>
+      <select id="shell" aria-label="Shell" title="Which shell to use">
+        <option value="default">Default shell</option>
+        <option value="bash">bash</option>
+        <option value="zsh">zsh</option>
+        <option value="fish">fish</option>
+      </select>
       <select id="theme" aria-label="Theme"></select>
       <button type="button" id="settings-btn" aria-expanded="false" aria-controls="settings">Network</button>
       <button type="button" id="clear" title="Clear the screen (the machine keeps running)">Clear</button>
@@ -45,6 +54,46 @@
     <button type="submit">Save and restart VM</button>
     <p>The VM reaches the internet through a relay. The default is Mercury Workshop's public Wisp server, which sees your VM's traffic. Leave the field empty to use it. To run your own, use <code>npx -y -p @mercuryworkshop/wisp-js@0.5.0 wisp-js-server</code> and enter <code>wisp://localhost:5001/</code>.</p>
   </form>
+
+  <form id="ask" hidden aria-label="Ask for a command">
+    <div class="ask-row">
+      <label for="ask-input">Ask</label>
+      <input id="ask-input" autocomplete="off" placeholder="What do you want to do? Or a command to fix, like: gti stauts">
+      <button type="submit">Suggest</button>
+      <button type="button" id="ask-close" aria-label="Close">✕</button>
+    </div>
+    <div id="ask-result" hidden aria-live="polite">
+      <p id="ask-note"></p>
+      <div id="ask-run" class="ask-row" hidden>
+        <input id="ask-cmd" spellcheck="false" autocomplete="off" aria-label="Command to run; you can edit it">
+        <button type="button" id="ask-go" class="accent">Run</button>
+        <button type="button" id="ask-cancel">Cancel</button>
+      </div>
+      <ul id="ask-warn"></ul>
+    </div>
+    <div id="ask-download" hidden>
+      <p id="ask-download-text"></p>
+      <button type="button" id="ask-get" class="accent">Download and ask</button>
+    </div>
+    <progress id="ask-progress" max="1" value="0" hidden></progress>
+    <details>
+      <summary>Options</summary>
+      <div class="ask-options">
+        <label for="ask-model">Model</label>
+        <select id="ask-model"></select>
+        <label><input type="checkbox" id="ask-hook"> Offer a fix when the shell can't find a command (bash, zsh, fish)</label>
+      </div>
+    </details>
+  </form>
+
+  <section id="extras" class="drawer" hidden aria-label="Extras">
+    <p>Tools picked from <a href="https://github.com/k4m4/terminals-are-sexy" target="_blank" rel="noopener">terminals-are-sexy</a>. Install shows the command first; nothing runs until you confirm.</p>
+    <div id="extras-list"></div>
+  </section>
+
+  <section id="cheat" class="drawer" hidden aria-label="Cheatsheet">
+    <div id="cheat-list"></div>
+  </section>
 
   <main id="term" aria-label="Terminal"></main>
 
